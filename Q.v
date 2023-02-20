@@ -1,9 +1,9 @@
-(* 
+(** 
   Rational library. 
   Definitions, arithmetics and properties.
-*)
+**)
 
-(* 
+(** 
 
 Em primeiro lugar, definimos os inteiros como naturais assinalados. Por convenção, estabelecemos que 
 
@@ -12,12 +12,12 @@ Em primeiro lugar, definimos os inteiros como naturais assinalados. Por convenç
 
 onde a é um número natural.
 
-*)
+**)
 
 Inductive int :=
 | Z : bool -> nat -> int.
 
-(* Para este tipo, definimos os seguintes métodos auxiliares. *)
+(** Para este tipo, definimos os seguintes métodos auxiliares. **)
 
 Definition abs (a : int) :=
   match a with
@@ -29,43 +29,16 @@ Definition signal (a : int) : bool :=
   | Z b _ => b
   end.
 
-(* 
+(**
 
   Agora, definimos as operações aritméticas de soma, subtração e multiplicação. 
 
-*)
+**)
 
 Definition mult_Z (a b : int) :=
   match a, b with
   | Z ab an, Z bb bn => Z (negb (xorb ab bb)) (an * bn)
   end.
-
-(* Lema auxiliar *)
-
-Lemma signal_th :
-  forall a b : int,
-    signal (mult_Z a b) = (negb (xorb (signal a) (signal b))).
-Proof.
-  intros. unfold mult_Z. destruct a.
-  - destruct b. 
-    + reflexivity.
-Qed. 
-
-(* Se os sinais são iguais, então a multiplicação retorna um número positivo. *)
-
-Lemma equal_positive :
-  forall a b : int, 
-    signal a = signal b -> 
-    signal (mult_Z a b) = true.
-Proof.
-  intros. rewrite signal_th. rewrite H. 
-  destruct b.
-  - destruct b.
-    + reflexivity.
-    + reflexivity.
-Qed. 
-
-(* [To-do] Demonstrar a volta. *)
 
 Fixpoint sub_Z_aux 
   (a b : nat)
@@ -105,33 +78,19 @@ Definition sum_Z (a b : int) :=
            Z true (an + bn)
         else
           (* a + (- b) = a - b*)
-          sub_Z a b
+          sub_Z (Z true (abs a)) (Z true (abs b))
       else
         if bb then
           (* - a + b = b - a*)
-          sub_Z b a
+          sub_Z (Z true (abs b)) (Z true (abs a))
         else
           (* - a + (- b) = - a - b *)
           Z false (an + bn)
-   end.
+  end.
 
-Compute mult_Z (Z true 2) (Z false 10).
+Compute sum_Z (Z true 2) (Z true 3).
 
-(* 
-
-Agora, podemos definir os números racionais. Por convenção, definimos
-
-(def) a/b = Q a b
-
-onde a e b são números inteiros, conforme definido acima.
-
-Além disso, diremos que a/b é undef sse b = 0.
- 
-*)
-
-Inductive rat :=
-| undef
-| Q : int -> int -> rat.
+(** Função auxiliar. **)
 
 Definition isZero (a : int) :=
   match a with
@@ -142,37 +101,185 @@ Definition isZero (a : int) :=
     end
   end.
 
+(** 
+
+   No que se segue, iremos demonstrar a seguinte propriedade.
+
+   Sejam 'a' e 'b' dois números inteiros. 
+
+   > Se o sinal de 'a' e 'b' são iguais, então a * b é positivo. 
+
+**)
+
+(** Lema auxiliar **)
+
+Lemma signal_th :
+  forall a b : int,
+    signal (mult_Z a b) = (negb (xorb (signal a) (signal b))).
+Proof.
+  intros. unfold mult_Z. destruct a.
+  - destruct b. 
+    + reflexivity.
+Qed. 
+
+Lemma equal_positive :
+  forall a b : int,
+    signal a = signal b ->
+    signal (mult_Z a b) = true.
+Proof.
+  intros. rewrite signal_th. rewrite H. 
+  destruct b.
+  - destruct b.
+    + reflexivity.
+    + reflexivity.
+Qed. 
+
+(** [To-do] Volta. **)
+
+Inductive rat :=
+| undef
+| Q : bool -> nat -> nat -> rat.
+
+(** 
+
+ Agora, podemos definir os números racionais. Por convenção, definimos
+
+    (def) a/b = q a b
+
+ onde a e b são números inteiros, conforme definido acima.
+
+**)
+
 Definition q (a b : int) :=
   if isZero b then undef
-  else Q a b.
+  else
+    match a, b with
+    | Z ab an, Z bb bn =>
+        Q (negb (xorb ab bb)) (abs a) (abs b)
+    end.
 
-Compute q (Z true 2) (Z false 123).
+(**
 
-Definition mult_Q (a b : rat) :=
+ Note que q é uma função que retorna Q a b se, e somente se, b <> 0.
+
+ O sinal de a/b é dado pela regra usual 
+
+ > (+ a/b) sse sinal de 'a' é igual ao sinal de 'b'. 
+
+**)
+
+(** exemplos **)
+Definition q1 := q (Z false 7) (Z true 3).
+Definition q2 := q (Z false 3) (Z false 13).
+
+Compute q1.
+
+Definition mult_Q_aux (a b : rat) :=
   match a with
   | undef => undef
-  | Q a1 a2 => 
+  | Q ab a1 a2 => 
       match b with
       | undef => undef
-      | Q b1 b2 => q (mult_Z a1 b1) (mult_Z a2 b2)
+      | Q bb b1 b2 =>
+          Q (negb (xorb ab bb))
+            (a1 * b1) (a2 * b2)
       end
   end.
+
+Definition mult_Q (a b : rat) :=
+  match (mult_Q_aux a b) with
+  | undef => undef
+  | Q ab a1 a2 =>
+      if (Nat.eqb a2 0) then undef
+      else Q ab a1 a2
+  end.
+
+(* exemplos *)
+Compute mult_Q q1 q2.
 
 Definition sum_Q (a b : rat) :=
   match a with
   | undef => undef
-  | Q a1 a2 =>
+  | Q ab a1 a2 =>
       match b with
       | undef => undef
-      | Q b1 b2 => 
-          q (sum_Z (mult_Z b2 a1) (mult_Z a2 b1))
-            (mult_Z a2 b2)
+      | Q bb b1 b2 =>
+          let aux :=
+            (sum_Z
+               (Z ab (mult b2 a1))
+               (Z bb (mult a2 b1))) in
+          Q (signal aux) (abs aux) (mult a2 b2)
       end
   end.
 
-Definition q1 := q (Z false 2) (Z false 4).
-Definition q2 := q (Z false 1) (Z false 10).
+(** exemplos **)
+Definition q3 := Q false 2 4.
+Definition q4 := Q true 1 10.
 
-Compute sum_Q q1 q2.
-Compute mult_Q q1 q2.
+Definition q5 := Q true 2 4.
+Definition q6 := Q false 1 10.
 
+Definition q7 := Q true 2 4.
+Definition q8 := Q true 1 10.
+
+Definition q9 := Q false 2 4.
+Definition q10 := Q false 1 10.
+
+Compute q3.
+Compute sum_Q q9 q10.
+
+Definition sub_Q (a b : rat) :=
+  match a with
+  | undef => undef
+  | Q ab a1 a2 =>
+      match b with
+      | undef => undef
+      | Q bb b1 b2 =>
+          let aux :=
+            (sub_Z
+               (Z ab (mult b2 a1))
+               (Z bb (mult a2 b1))) in
+          Q (signal aux) (abs aux) (mult a2 b2)
+      end
+  end.
+
+Compute sub_Z (Z true 20) (Z true 4).
+
+Compute sub_Q q3 q4.
+Compute sub_Q q5 q6.
+Compute sub_Q q7 q8.
+Compute sub_Q q9 q10.
+
+Definition div_Q (a b : rat) :=
+  match a with
+  | undef => undef
+  | Q ab a1 a2 =>
+      match b with
+      | undef => undef
+      | Q bb b1 b2 =>
+          mult_Q (Q ab a1 a2) (Q bb b2 b1)
+      end
+  end.
+
+(**
+
+Algumas notações uteis.
+
+**)
+
+Notation "- ( a | b )" := (Q false a b).
+Notation "+ ( a | b )" := (Q true a b).
+Notation "( a | b )" := (Q true a b). (* shorthand *)
+
+Notation "a ⊗ b" := (mult_Q a b) (at level 50).
+Notation "a ⊕ b" := (sum_Q a b) (at level 51).
+Notation "a ⊖ b" := (sub_Q a b) (at level 52).
+Notation "a ⊘ b" := (div_Q a b) (at level 52).
+
+Compute q1.
+Compute q2.
+
+Compute q2 ⊕ q1.
+Compute q2 ⊗ q1.
+Compute q2 ⊖ q1.
+Compute q2 ⊘ q2.
