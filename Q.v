@@ -283,3 +283,29 @@ Compute q2 ⊕ q1.
 Compute q2 ⊗ q1.
 Compute q2 ⊖ q1.
 Compute q2 ⊘ q2.
+
+(* Algumas propriedades. *)
+
+(* Soma. *)
+
+Theorem Q_sum_comm:
+  forall a b, a ⊕ b = b ⊕ a.
+Proof.
+Admitted.
+
+Theorem Q_sum_assoc:
+  forall a b c, a ⊕ (b ⊕ c) = (a ⊕ b) ⊕ c.
+Proof.
+Admitted.
+
+(* Multiplicação. *)
+
+Theorem Q_mult_comm:
+  forall a b, a ⊗ b = b ⊗ a.
+Proof.
+Admitted.
+
+Theorem Q_mult_assoc:
+  forall a b c, a ⊗ (b ⊗ c) = (a ⊗ b) ⊗ c.
+Proof.
+Admitted.
