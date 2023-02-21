@@ -279,7 +279,9 @@ Notation "a ⊘ b" := (div_Q a b) (at level 52).
 Compute q1.
 Compute q2.
 
-Compute q2 ⊕ q1.
+Compute q1 ⊕ (q2 ⊕ q1).
+Compute (q1 ⊕ q2) ⊕ q1.
+
 Compute q2 ⊗ q1.
 Compute q2 ⊖ q1.
 Compute q2 ⊘ q2.
@@ -310,10 +312,49 @@ Proof.
         ** rewrite (plus_comm).
            reflexivity.
 Qed.
-      
+
+Set Printing Parentheses.
+
+Require Import Lia.
+
 Theorem Q_plus_assoc:
   forall a b c, a ⊕ (b ⊕ c) = (a ⊕ b) ⊕ c.
 Proof.
+  intros. destruct a as [| sa a1 a2 ].
+  - destruct b.
+    + reflexivity.
+    + reflexivity.
+  - destruct b as [| sb b1 b2 ].
+    + reflexivity.
+    + destruct c as [| sc c1 c2 ].
+      * reflexivity.
+      * simpl. destruct sa.
+        ** destruct sb.
+           *** destruct sc.
+               **** destruct signal.
+                    ***** simpl.
+                    rewrite mult_assoc.
+                    rewrite plus_comm.
+                    rewrite mult_comm.
+                    rewrite mult_plus_distr_r.
+                    rewrite mult_plus_distr_l.
+                    rewrite mult_assoc.
+                    rewrite <- (plus_assoc ((c2 * b2) * a1)).
+                    rewrite plus_comm.
+                    rewrite mult_comm.
+                    rewrite (mult_comm (c2 * b2)).
+                    rewrite (mult_comm b2).
+                    rewrite (mult_comm a2 b1).
+                    rewrite <- (mult_assoc c2).
+                    rewrite (mult_comm (b2 * c1)).
+                    rewrite (mult_assoc a2).
+                    reflexivity.
+                    ***** simpl.
+                    rewrite mult_assoc.
+                    unfold sub_Z_aux.
+
+                    (* IDEIA : USAR Q_plus_comm *)
+
 Admitted.
 
 (* Multiplicação. *)
@@ -321,14 +362,7 @@ Admitted.
 Theorem Q_mult_comm:
   forall a b, a ⊗ b = b ⊗ a.
 Proof.
-  intros. destruct a.
-  - destruct b.
-    + reflexivity.
-    + reflexivity.
-  - destruct b.
-    + reflexivity.
-    + induction n.
-      * 
+Admitted.
   
 Theorem Q_mult_assoc:
   forall a b c, a ⊗ (b ⊗ c) = (a ⊗ b) ⊗ c.
