@@ -242,6 +242,32 @@ Notation "a ⊕ b" := (sum_Q a b) (at level 52).
 Notation "a ⊖ b" := (sub_Q a b) (at level 53).
 ```
 
+#### Exemplos
+
+```coq
+Compute q2 ⊕ q1.
+= - (82 | 39)
+     : rat
+```
+
+```coq
+Compute q2 ⊗ q1.
+= - (21 | 39)
+     : rat
+```
+
+```coq
+Compute q2 ⊖ q1.
+= (100 | 39)
+     : rat
+```
+
+```coq
+Compute q2 ⊘ q1.
+= - (9 | 91)
+     : rat
+```
+
 ### Propriedades
 
 ```coq
