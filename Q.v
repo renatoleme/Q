@@ -288,11 +288,29 @@ Compute q2 ⊘ q2.
 
 (* Soma. *)
 
+Require Import Arith.
+
 Theorem Q_sum_comm:
   forall a b, a ⊕ b = b ⊕ a.
 Proof.
-Admitted.
-
+  intros. destruct a as [| sa a1 a2 ].
+  - destruct b.
+    + simpl. reflexivity.
+    + simpl. reflexivity.
+  - destruct b as [| sb b1 b2 ].
+    + reflexivity.
+    + simpl. rewrite (mult_comm b2 a2). destruct sb.
+      * destruct sa.
+        ** rewrite (mult_comm b2 a1).
+           rewrite (plus_comm).
+           reflexivity.
+        ** reflexivity.
+      * destruct sa.
+        ** reflexivity.
+        ** rewrite (plus_comm).
+           reflexivity.
+Qed.
+      
 Theorem Q_sum_assoc:
   forall a b c, a ⊕ (b ⊕ c) = (a ⊕ b) ⊕ c.
 Proof.
@@ -303,8 +321,15 @@ Admitted.
 Theorem Q_mult_comm:
   forall a b, a ⊗ b = b ⊗ a.
 Proof.
-Admitted.
-
+  intros. destruct a.
+  - destruct b.
+    + reflexivity.
+    + reflexivity.
+  - destruct b.
+    + reflexivity.
+    + induction n.
+      * 
+  
 Theorem Q_mult_assoc:
   forall a b c, a ⊗ (b ⊗ c) = (a ⊗ b) ⊗ c.
 Proof.
