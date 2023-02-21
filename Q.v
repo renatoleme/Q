@@ -69,7 +69,7 @@ Definition sub_Z (a b : int) :=
           sub_Z_aux bn an
    end.
 
-Definition sum_Z (a b : int) :=
+Definition plus_Z (a b : int) :=
   match a, b with
   | Z ab an, Z bb bn =>
       if ab then
@@ -88,7 +88,7 @@ Definition sum_Z (a b : int) :=
           Z false (an + bn)
   end.
 
-Compute sum_Z (Z true 2) (Z true 3).
+Compute plus_Z (Z true 2) (Z true 3).
 
 (** Função auxiliar. **)
 
@@ -197,7 +197,7 @@ Definition mult_Q (a b : rat) :=
 (* exemplos *)
 Compute mult_Q q1 q2.
 
-Definition sum_Q (a b : rat) :=
+Definition plus_Q (a b : rat) :=
   match a with
   | undef => undef
   | Q ab a1 a2 =>
@@ -205,7 +205,7 @@ Definition sum_Q (a b : rat) :=
       | undef => undef
       | Q bb b1 b2 =>
           let aux :=
-            (sum_Z
+            (plus_Z
                (Z ab (mult b2 a1))
                (Z bb (mult a2 b1))) in
           Q (signal aux) (abs aux) (mult a2 b2)
@@ -226,7 +226,7 @@ Definition q9 := Q false 2 4.
 Definition q10 := Q false 1 10.
 
 Compute q3.
-Compute sum_Q q9 q10.
+Compute plus_Q q9 q10.
 
 Definition sub_Q (a b : rat) :=
   match a with
@@ -272,7 +272,7 @@ Notation "+ ( a | b )" := (Q true a b).
 Notation "( a | b )" := (Q true a b). (* shorthand *)
 
 Notation "a ⊗ b" := (mult_Q a b) (at level 50).
-Notation "a ⊕ b" := (sum_Q a b) (at level 51).
+Notation "a ⊕ b" := (plus_Q a b) (at level 51).
 Notation "a ⊖ b" := (sub_Q a b) (at level 52).
 Notation "a ⊘ b" := (div_Q a b) (at level 52).
 
@@ -290,7 +290,7 @@ Compute q2 ⊘ q2.
 
 Require Import Arith.
 
-Theorem Q_sum_comm:
+Theorem Q_plus_comm:
   forall a b, a ⊕ b = b ⊕ a.
 Proof.
   intros. destruct a as [| sa a1 a2 ].
@@ -311,7 +311,7 @@ Proof.
            reflexivity.
 Qed.
       
-Theorem Q_sum_assoc:
+Theorem Q_plus_assoc:
   forall a b c, a ⊕ (b ⊕ c) = (a ⊕ b) ⊕ c.
 Proof.
 Admitted.
